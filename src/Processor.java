@@ -1,4 +1,7 @@
 import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created by natha on 3/21/2017.
@@ -10,8 +13,10 @@ public class Processor extends Thread {
     private static int idCounter = 0;
     private int id;
     private static boolean multiTest;
+    private static DateFormat dateFormat;
 
     public Processor(){
+        dateFormat = new SimpleDateFormat("HH:mm:ss");
         this.id = idCounter;
         multiTest = false;
         idCounter++;
@@ -30,8 +35,8 @@ public class Processor extends Thread {
 
     private void critical(){
         int x;
-        if(id != ( x = dsm.load("flag")))
-            System.out.println("PID doesn't match flag. ID: " + id + " flag: " + x);
+        Date date = new Date();
+        System.out.println(id+": in Critical @ " + dateFormat.format(date));
     }
 
     private synchronized void unlock(){
