@@ -19,13 +19,13 @@ public class BroadcastAgent extends Thread{
         broadcastSystem.addAgent(this);
     }
 
-    public void broadcast(String message, int v){
+    public synchronized void broadcast(String message, int index, int v, int skipId){
         // Send a store
         try{
             Thread.sleep(ThreadLocalRandom.current().nextInt(100, 400));
             socket = new Socket("localhost", 6969);
             os = new PrintWriter(socket.getOutputStream());
-            String toSend = message+":"+v;
+            String toSend = message+":"+index+":"+v+":"+skipId;
             os.print(toSend);
             os.close();
             socket.close();
@@ -35,9 +35,9 @@ public class BroadcastAgent extends Thread{
         }
     }
 
-    public void receive(String loc, int val){
+    public synchronized void receive(String loc, int index, int val){
         // Receive a store
-        localMemory.store(loc, val);
+        localMemory.store(loc, index, val);
 
     }
 

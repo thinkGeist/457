@@ -4,6 +4,7 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.InterfaceAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -35,13 +36,14 @@ public class BroadcastSystem extends Thread{
         agents.add(ba);
     }
 
-    private void broadcast(String loc, int val){
+    private synchronized void broadcast(String loc, int index, int val, int skipId){
         for(BroadcastAgent agent : agents){
-            agent.receive(loc, val);
+            if(agent.getId() != skipId)
+                agent.receive(loc, index, val);
         }
     }
 
-    public void run(){
+    public synchronized void run(){
         while(alive){
             // Listen for broadcasts
             try {
@@ -49,8 +51,10 @@ public class BroadcastSystem extends Thread{
                 in = new BufferedReader(new InputStreamReader(client.getInputStream()));
                 String msg = in.readLine();
                 String[] msgArray = msg.split(":");
-                int val = Integer.parseInt(msgArray[1]);
-                broadcast(msgArray[0], val);
+                int index = Integer.parseInt(msgArray[1]);
+                int val = Integer.parseInt(msgArray[2]);
+                int skipId = Integer.parseInt(msgArray[3]);
+                broadcast(msgArray[0], index, val, skipId);
                 client.close();
 
             }

@@ -12,8 +12,10 @@ public class Processor extends Thread {
     private DSM dsm;
     private static int idCounter = 0;
     private int id;
+    private TokenRingAgent ringAgent;
     private static boolean multiTest;
     private static DateFormat dateFormat;
+
 
     public Processor(){
         dateFormat = new SimpleDateFormat("HH:mm:ss");
@@ -21,30 +23,51 @@ public class Processor extends Thread {
         multiTest = false;
         idCounter++;
         this.dsm = new DSM(id);
+
+    }
+
+    private boolean wait(int j) {
+        if (dsm.load("turn", j) != id)
+            return false;
+
+        int[] testArray = dsm.retArray("flag");
+        for (int i = 0; i < testArray.length; i++) {
+            if (i == id)
+                continue;
+            if (testArray[i] >= j) {
+                return true;
+
+            }
+        }
+        return false;
     }
 
     private synchronized void lock(){
-        for(int i=0; i< idCounter-1; i++){
-            dsm.store("flag", i);
-            dsm.store("turn", id);
-            while((dsm.load("turn") == id) && (dsm.load("flag") >= i));
+        for(int j=0; j< idCounter-1; j++){
+            dsm.store("flag", id, j);
+            dsm.store("turn", j, id);
+            boolean exit = false;
+            while(true){
+                if(wait(j))
+                    Thread.yield();
+                else
+                    break;
+            }
         }
-        multiTest = true;
-        critical();
+
     }
 
-    private void critical(){
-        int x;
+    private synchronized void critical(){
         Date date = new Date();
         System.out.println(id+": in Critical @ " + dateFormat.format(date));
     }
 
     private synchronized void unlock(){
-        dsm.store("flag", -1);
-        multiTest = false;
+        dsm.store("flag", id, -1);
+        dsm.sendToken();
     }
 
-    public void run(){
+    public synchronized void run(){
         while(true){
             lock();
             critical();

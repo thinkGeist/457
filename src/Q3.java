@@ -1,7 +1,8 @@
 /**
- * Created by natha on 3/23/2017.
+ * Created by natha on 3/24/2017.
  */
-public class Q1_2 {
+public class Q3 {
+
     public static void main(String[] args){
         BroadcastSystem broadcastSystem = BroadcastSystem.getInstance();
         broadcastSystem.start();
@@ -10,7 +11,9 @@ public class Q1_2 {
             pArray[i] = new Processor();
             pArray[i].start();
         }
-
+        TokenRing tr = TokenRing.getInstance();
+        Token t1 = new Token(1);
+        tr.giveToken(t1, 0);
 
     }
 }
