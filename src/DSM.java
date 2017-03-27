@@ -14,7 +14,7 @@ public class DSM {
         this.ringAgent = new TokenRingAgent(id);
     }
 
-    public int[] retArray(String loc){
+    public synchronized int[] retArray(String loc){
         return localMemory.retArray(loc);
     }
     public synchronized int load(String loc, int index){
@@ -22,15 +22,19 @@ public class DSM {
         return localMemory.load(loc, index);
     }
 
-    public void sendToken(){
+    public synchronized void sendToken(){
         ringAgent.sendToken();
     }
 
     public synchronized void store(String loc, int index, int v){
         // Store to localmemory
-        while(!ringAgent.hasToken()){
-            Thread.yield();
+        if(loc.equals("turn")) {
+            while (!ringAgent.hasToken(index)) {
+                Thread.yield();
+            }
+            System.out.println(id + " storing " + loc);
         }
+
         localMemory.store(loc, index, v);
         // Broadcast to store
         ba.broadcast(loc, index, v, id);

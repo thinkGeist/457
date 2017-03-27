@@ -26,7 +26,7 @@ public class Processor extends Thread {
 
     }
 
-    private boolean wait(int j) {
+    private synchronized boolean wait(int j) {
         if (dsm.load("turn", j) != id)
             return false;
 
@@ -46,7 +46,7 @@ public class Processor extends Thread {
         for(int j=0; j< idCounter-1; j++){
             dsm.store("flag", id, j);
             dsm.store("turn", j, id);
-            boolean exit = false;
+
             while(true){
                 if(wait(j))
                     Thread.yield();

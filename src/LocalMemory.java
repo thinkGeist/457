@@ -12,8 +12,7 @@ public class LocalMemory {
     private int id;
 
     public LocalMemory(int id){
-        memory = new HashMap<String, Integer[]>();
-        flag = new int[10];
+               flag = new int[10];
         turn = new int[10];
         Arrays.fill(flag, -1);
         Arrays.fill(turn, -1);

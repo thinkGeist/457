@@ -1,43 +1,52 @@
+import java.util.ArrayList;
+
 /**
  * Created by natha on 3/21/2017.
  */
 public class TokenRingAgent extends Thread{
     private int id;
-    private boolean active;
-    private int logicalId;
-    private int idPrevious;
-    private int idNext;
-    private TokenRing tokenRing;
-    private Token t;
 
-    public int getIdNext() {
-        return idNext;
+    public static ArrayList<TokenRingAgent> ringAgents = new ArrayList<TokenRingAgent>();
+    private ArrayList<Token> tokens;
+
+    public int returnId() {
+        return id;
     }
 
     public TokenRingAgent(int id){
         this.id = id;
-        this.t = null;
-        this.logicalId = id;
-        this.active = true;
-        this.tokenRing = TokenRing.getInstance();
-        tokenRing.addAgent(this);
-        idNext = tokenRing.getNextAgentIndex(id);
-        idPrevious = tokenRing.getPrevAgentIndex(id);
+        this.tokens = new ArrayList<Token>();
+        ringAgents.add(id, this);
     }
 
-    public boolean hasToken() {
-        return(!(t==null));
+    public boolean hasToken(int index) {
+        try {
+            if (tokens.get(index) != null) {
+                if (tokens.get(index).getOwner() == this) {
+                    return true;
+                }
+                return false;
+            }
+            return false;
+        } catch(IndexOutOfBoundsException e){
+            return false;
+        }
     }
     public synchronized int receiveToken(Token t){
         // Returns identifier for token receive
-        this.t = t;
-        System.out.println(id + " received token");
-        return t.getId();
+        tokens.add(t.getIndex(), t);
+        //System.out.println(id + " received token");
+        return t.getIndex();
     }
 
     public synchronized void sendToken(){
         // Send t to successor
-        tokenRing.giveToken(t, tokenRing.getNextAgentIndex(id));
-        t = null;
+        for(int i=0; i < tokens.size(); i++){
+            if(tokens.get(i) != null){
+                tokens.get(i).passToken();
+                tokens.add(i, null);
+            }
+
+        }
     }
 }
